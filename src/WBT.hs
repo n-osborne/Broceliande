@@ -2,7 +2,26 @@ module WBT
   ()
   where
 
+import Data.Monoid
+import qualified Data.Foldable as F
+
+-- Data declaration and instance
+
 data WBT k = Ewbt | Nwbt k Int (WBT k) (WBT k) deriving (Show)
+
+instance Functor WBT where
+  fmap f Ewbt = Ewbt
+  fmap f (Nwbt k s l r) = Nwbt (f k) s (fmap f l) (fmap f r)
+
+instance (Ord k) => Monoid (WBT k) where
+  mempty = Ewbt
+  mappend = wbtAppend
+
+instance F.Foldable WBT where
+  foldMap f Ewbt = mempty
+  foldMap f (Nwbt k s l r) = F.foldMap f l `mappend`
+                             f k `mappend`
+                             F.foldMap f r
 
 -- constants (magic numbers)
 
@@ -22,6 +41,10 @@ wbtIsNotEmpty t = not $ wbtIsEmpty t
 wbtSize :: WBT k -> Int
 wbtSize Ewbt = 0
 wbtSize (Nwbt _ s _ _) = s
+
+wbtHeight :: WBT k -> Int
+wbtHeight Ewbt = 0
+wbtHeight (Nwbt _ _ l r) = 1 + max (wbtHeight l) (wbtHeight r)
 
 -- | Leaf constructor
 wbtLeaf :: k -> WBT k
@@ -84,3 +107,32 @@ rotate (Nwbt k s l r)
   | wbtIsBalanced $ Nwbt k s l r = Nwbt k s l r
   | wbtSize l < wbtSize r = rotateL $ Nwbt k s l r
   | otherwise = rotateR $ Nwbt k s l r
+
+-- | Add a key.
+add :: (Ord k) => k -> WBT k -> WBT k
+add x Ewbt = wbtLeaf x
+add x (Nwbt k s l r)
+  | x < k = rotate $ Nwbt k (s + 1) (add x l) r
+  | x > k = rotate $ Nwbt k (s + 1) l (add x r)
+  | x == k = Nwbt k s l r
+
+-- | Append a WBT to another WBT
+wbtAppend :: (Ord k) => WBT k -> WBT k -> WBT k
+wbtAppend Ewbt t = t
+wbtAppend t Ewbt = t
+wbtAppend t (Nwbt k _ l r) = wbtAppend (wbtAppend (add k t) l) r
+
+
+-- | Build the WBT from a given F.Foldable
+fold2wbt :: (F.Foldable f, Ord k) => f k -> WBT k
+fold2wbt f = F.foldMap wbtLeaf f
+
+-- | Build the WBT from a list of keys
+list2wbt :: (Ord k) => [k] -> WBT k
+list2wbt l = mconcat $ map wbtLeaf l
+
+-- | Build a list from the keys of a WBT
+wbt2list :: (Ord k) => WBT k -> [k]
+wbt2list t = F.foldMap (\x -> [x]) t
+
+
