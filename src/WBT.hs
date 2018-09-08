@@ -36,6 +36,10 @@ wbtIsBalanced (Nwbt k s l r) = cond1 && cond2
   where cond1 = 1 + wbtSize l <= magicNumb1 * (1 + wbtSize r)
         cond2 = 1 + wbtSize r <= magicNumb1 * (1 + wbtSize l)
 
+-- | Predicate for single rotation
+needSingleR :: WBT k -> WBT k -> Bool
+needSingleR l r = (1 + wbtSize l) < magicNumb2 * (1 + wbtSize r)
+
 -- | Single left rotation
 singleLR :: WBT k -> WBT k
 singleLR (Nwbt k s l (Nwbt k' s' l' r')) = Nwbt k' s1 (Nwbt k s2 l l') r'
@@ -61,3 +65,22 @@ doubleRR (Nwbt k0 s0 (Nwbt k1 s1 l1 (Nwbt k2 s2 l2 r2)) r0) =
   Nwbt k2 (s1 + s0 + 1) (Nwbt k1 s3 l1 l2) (Nwbt k0 s4 r2 r0)
   where s3 = wbtSize l1 + wbtSize l2 + 1
         s4 = wbtSize r2 + wbtSize r0 + 1
+
+-- | Choose the good Left Rotation
+rotateL :: WBT k -> WBT k
+rotateL (Nwbt k s l r)
+  | needSingleR l r = singleLR $ Nwbt k s l r
+  | otherwise = doubleLR $ Nwbt k s l r
+
+-- | Choose the good Right Rotation
+rotateR :: WBT k -> WBT k
+rotateR (Nwbt k s l r)
+  | needSingleR r l = singleRR $ Nwbt k s l r
+  | otherwise = doubleRR $ Nwbt k s l r
+
+-- | Rotate a WBT if necessary
+rotate :: WBT k -> WBT k
+rotate (Nwbt k s l r)
+  | wbtIsBalanced $ Nwbt k s l r = Nwbt k s l r
+  | wbtSize l < wbtSize r = rotateL $ Nwbt k s l r
+  | otherwise = rotateR $ Nwbt k s l r
