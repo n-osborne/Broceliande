@@ -50,6 +50,31 @@ wbtHeight (Nwbt _ _ l r) = 1 + max (wbtHeight l) (wbtHeight r)
 wbtLeaf :: k -> WBT k
 wbtLeaf key = Nwbt key 1 Ewbt Ewbt
 
+-- | Get the min in a Maybe
+wbtMin :: (Ord k) => WBT k -> Maybe k
+wbtMin Ewbt = Nothing
+wbtMin (Nwbt k s l r)
+  | l == Ewbt = Just k
+  | otherwise = wbtMin l
+  
+-- | elem primitive
+wbtElem :: (Ord k) => k -> WBT k -> Bool
+wbtElem x Ewbt = False
+wbtElem x (Nwbt k _ l r)
+  | x == k = True
+  | x < k = wbtElem x l
+  | x > k = wbtElem x r
+
+-- | Get the nth element in a Maybe, starting at 0 as in an array.
+wbtNthElem :: Int -> WBT k -> Maybe k
+wbtNthElem _ Ewbt = Nothing
+wbtNthElem n (Nwbt k s l r)
+  | n > s = Nothing
+  | n < x = wbtNthElem n l
+  | n == x = Just k
+  | otherwise = wbtNthElem (n - x - 1) r
+  where x = wbtSize l
+  
 -- Specific Primitives
 
 -- | Predicate for well balanced WBF
