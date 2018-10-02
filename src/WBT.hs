@@ -51,10 +51,10 @@ wbtLeaf :: k -> WBT k
 wbtLeaf key = Nwbt key 1 Ewbt Ewbt
 
 -- | Get the min in a Maybe
-wbtMin :: (Ord k) => WBT k -> Maybe k
+wbtMin :: WBT k -> Maybe k
 wbtMin Ewbt = Nothing
 wbtMin (Nwbt k s l r)
-  | l == Ewbt = Just k
+  | wbtIsEmpty l = Just k
   | otherwise = wbtMin l
   
 -- | elem primitive
