@@ -145,7 +145,11 @@ add x (Nwbt k s l r)
 wbtAppend :: (Ord k) => WBT k -> WBT k -> WBT k
 wbtAppend Ewbt t = t
 wbtAppend t Ewbt = t
-wbtAppend t (Nwbt k _ l r) = wbtAppend (wbtAppend (add k t) l) r
+wbtAppend t (Nwbt k _ l r)
+  | wbtIsEmpty l = wbtAppend (add k t) r 
+  | wbtIsEmpty r = wbtAppend (add k t) l 
+  | wbtIsEmpty r && wbtIsEmpty l = add k t
+  | otherwise = wbtAppend (wbtAppend (add k t) l) r
 
 
 -- | Build the WBT from a given F.Foldable
