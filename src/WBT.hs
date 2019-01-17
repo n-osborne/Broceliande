@@ -24,19 +24,11 @@ instance F.Foldable WBT where
                              F.foldMap f r
 
 -- constants (magic numbers)
-
 -- According to Hirai and Kazuhiko 2011
 magicNumb1 = 3
 magicNumb2 = 2
 
 -- Simple Primitives
-
-wbtIsEmpty :: WBT k -> Bool
-wbtIsEmpty Ewbt           = True
-wbtIsEmpty (Nwbt _ _ _ _) = False
-
-wbtIsNotEmpty :: WBT k -> Bool
-wbtIsNotEmpty t = not $ wbtIsEmpty t
 
 wbtSize :: WBT k -> Int
 wbtSize Ewbt           = 0
