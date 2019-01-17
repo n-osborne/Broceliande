@@ -2,15 +2,15 @@ module WBT
   ()
   where
 
-import Data.Monoid
 import qualified Data.Foldable as F
+import           Data.Monoid
 
 -- Data declaration and instance
 
 data WBT k = Ewbt | Nwbt k Int (WBT k) (WBT k) deriving (Show)
 
 instance Functor WBT where
-  fmap f Ewbt = Ewbt
+  fmap f Ewbt           = Ewbt
   fmap f (Nwbt k s l r) = Nwbt (f k) s (fmap f l) (fmap f r)
 
 instance (Ord k) => Monoid (WBT k) where
@@ -32,18 +32,18 @@ magicNumb2 = 2
 -- Simple Primitives
 
 wbtIsEmpty :: WBT k -> Bool
-wbtIsEmpty Ewbt = True
+wbtIsEmpty Ewbt           = True
 wbtIsEmpty (Nwbt _ _ _ _) = False
 
 wbtIsNotEmpty :: WBT k -> Bool
 wbtIsNotEmpty t = not $ wbtIsEmpty t
 
 wbtSize :: WBT k -> Int
-wbtSize Ewbt = 0
+wbtSize Ewbt           = 0
 wbtSize (Nwbt _ s _ _) = s
 
 wbtHeight :: WBT k -> Int
-wbtHeight Ewbt = 0
+wbtHeight Ewbt           = 0
 wbtHeight (Nwbt _ _ l r) = 1 + max (wbtHeight l) (wbtHeight r)
 
 -- | Leaf constructor
@@ -56,7 +56,7 @@ wbtMin Ewbt = Nothing
 wbtMin (Nwbt k s l r)
   | wbtIsEmpty l = Just k
   | otherwise = wbtMin l
-  
+
 -- | elem primitive
 wbtElem :: (Ord k) => k -> WBT k -> Bool
 wbtElem x Ewbt = False
@@ -74,7 +74,7 @@ wbtNthElem n (Nwbt k s l r)
   | n == x = Just k
   | otherwise = wbtNthElem (n - x - 1) r
   where x = wbtSize l
-  
+
 -- Specific Primitives
 
 -- | Predicate for well balanced WBF
@@ -146,8 +146,8 @@ wbtAppend :: (Ord k) => WBT k -> WBT k -> WBT k
 wbtAppend Ewbt t = t
 wbtAppend t Ewbt = t
 wbtAppend t (Nwbt k _ l r)
-  | wbtIsEmpty l = wbtAppend (add k t) r 
-  | wbtIsEmpty r = wbtAppend (add k t) l 
+  | wbtIsEmpty l = wbtAppend (add k t) r
+  | wbtIsEmpty r = wbtAppend (add k t) l
   | wbtIsEmpty r && wbtIsEmpty l = add k t
   | otherwise = wbtAppend (wbtAppend (add k t) l) r
 
