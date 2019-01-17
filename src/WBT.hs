@@ -50,12 +50,11 @@ wbtHeight (Nwbt _ _ l r) = 1 + max (wbtHeight l) (wbtHeight r)
 wbtLeaf :: k -> WBT k
 wbtLeaf key = Nwbt key 1 Ewbt Ewbt
 
--- | Get the min in a Maybe
+-- | Get the min in a Maybe (the min is at the left)
 wbtMin :: WBT k -> Maybe k
-wbtMin Ewbt = Nothing
-wbtMin (Nwbt k s l r)
-  | wbtIsEmpty l = Just k
-  | otherwise = wbtMin l
+wbtMin Ewbt              = Nothing
+wbtMin (Nwbt k _ Ewbt _) = Just k
+wbtMin (Nwbt _ _ l _)    = wbtMin l
 
 -- | elem primitive
 wbtElem :: (Ord k) => k -> WBT k -> Bool
